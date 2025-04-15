@@ -15,7 +15,18 @@ public class LibraryManagementSystemGUI extends JFrame {
 
     private List<Book> bookList = new ArrayList<>();
 
+    //Temporary book variables for testing
+    private Book book1 = BookFactory.createBook("physical","9780141036144", "1984", "George Orwell", "Fiction");
+    private Book book2 = BookFactory.createBook("ebook", "9780241341131", "Digital Minimalism", "Cal Newport", "Self-Improvement");
+
+    
+
     public LibraryManagementSystemGUI() {
+
+        //Adding temporary book variables to book list
+        bookList.add(book1);
+        bookList.add(book2);
+
         setTitle("Library Management System");
         setSize(600, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -169,14 +180,26 @@ public class LibraryManagementSystemGUI extends JFrame {
         searchFrame.setLocationRelativeTo(this);
         searchFrame.setLayout(new BorderLayout());
     
-        JPanel inputPanel = new JPanel(new GridLayout(2, 2, 5, 5));
+        JPanel inputPanel = new JPanel(new GridLayout(4, 2, 5, 5));
     
         JLabel searchLabel = new JLabel("Enter Title or ISBN:");
         JTextField searchField = new JTextField();
+        
+        JLabel categoryLabel = new JLabel("Category:");
+        String[] categories = {"All", "Fiction", "Science", "History", "Self-Improvement", "Fantasy"};
+        JComboBox<String> categoryBox = new JComboBox<>(categories);
+
+        JCheckBox availableOnlyCheck = new JCheckBox("Only show available");
+        JCheckBox exactMatchCheck = new JCheckBox("Exact match");
+
         JButton searchButton = new JButton("Search");
     
         inputPanel.add(searchLabel);
         inputPanel.add(searchField);
+        inputPanel.add(categoryLabel);
+        inputPanel.add(categoryBox);
+        inputPanel.add(availableOnlyCheck);
+        inputPanel.add(exactMatchCheck);
         inputPanel.add(new JLabel());
         inputPanel.add(searchButton);
     
@@ -191,9 +214,20 @@ public class LibraryManagementSystemGUI extends JFrame {
                     return;
                 }
     
+                String selectedCategory = categoryBox.getSelectedItem().toString();
+                boolean onlyAvailable = availableOnlyCheck.isSelected();
+                boolean exactMatch = exactMatchCheck.isSelected();
+
                 List<Book> results = new ArrayList<>();
                 for (Book book : bookList) {
-                    if (book.getTitle().toLowerCase().contains(query) || book.getISBN().toLowerCase().contains(query)) {
+                    boolean matchesQuery = exactMatch
+                        ? book.getTitle().equalsIgnoreCase(query) || book.getISBN().equalsIgnoreCase(query)
+                        : book.getTitle().toLowerCase().contains(query) || book.getISBN().toLowerCase().contains(query);
+
+                    boolean matchesCategory = selectedCategory.equals("All") || book.getCategory().equalsIgnoreCase(selectedCategory);
+                    boolean matchesAvailability = !onlyAvailable || book.isAvailable();
+
+                    if (matchesQuery && matchesCategory && matchesAvailability) {
                         results.add(book);
                     }
                 }
