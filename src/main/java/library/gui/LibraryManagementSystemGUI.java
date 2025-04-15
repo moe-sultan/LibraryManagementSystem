@@ -46,7 +46,23 @@ public class LibraryManagementSystemGUI extends JFrame {
                 openAddBookWindow();
             }
         });
+
+        viewButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                openViewBooksWindow();
+            }
+        });
+
+        searchButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                openSearchBooksWindow();
+            }
+        });        
+        
     }
+
 
     private void openAddBookWindow() {
         
@@ -120,7 +136,106 @@ public class LibraryManagementSystemGUI extends JFrame {
             }
         });
     }
+
+
+    private void openViewBooksWindow() {
+        JFrame viewFrame = new JFrame("View All Books");
+        viewFrame.setSize(700, 400);
+        viewFrame.setLocationRelativeTo(this);
     
+        String[] columns = {"Title", "Author", "Category", "ISBN", "Available"};
+    
+        String[][] data = new String[bookList.size()][5];
+        for (int i = 0; i < bookList.size(); i++) {
+            Book book = bookList.get(i);
+            data[i][0] = book.getTitle();
+            data[i][1] = book.getAuthor();
+            data[i][2] = book.getCategory();
+            data[i][3] = book.getISBN();
+            data[i][4] = book.isAvailable() ? "Yes" : "No";
+        }
+    
+        JTable table = new JTable(data, columns);
+        JScrollPane scrollPane = new JScrollPane(table);
+    
+        viewFrame.add(scrollPane);
+        viewFrame.setVisible(true);
+    }    
+
+
+    private void openSearchBooksWindow() {
+        JFrame searchFrame = new JFrame("Search Books");
+        searchFrame.setSize(500, 150);
+        searchFrame.setLocationRelativeTo(this);
+        searchFrame.setLayout(new BorderLayout());
+    
+        JPanel inputPanel = new JPanel(new GridLayout(2, 2, 5, 5));
+    
+        JLabel searchLabel = new JLabel("Enter Title or ISBN:");
+        JTextField searchField = new JTextField();
+        JButton searchButton = new JButton("Search");
+    
+        inputPanel.add(searchLabel);
+        inputPanel.add(searchField);
+        inputPanel.add(new JLabel());
+        inputPanel.add(searchButton);
+    
+        searchFrame.add(inputPanel, BorderLayout.CENTER);
+    
+        searchButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String query = searchField.getText().trim().toLowerCase();
+                if (query.isEmpty()) {
+                    JOptionPane.showMessageDialog(searchFrame, "Please enter a search query.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+    
+                List<Book> results = new ArrayList<>();
+                for (Book book : bookList) {
+                    if (book.getTitle().toLowerCase().contains(query) || book.getISBN().toLowerCase().contains(query)) {
+                        results.add(book);
+                    }
+                }
+    
+                if (results.isEmpty()) {
+                    JOptionPane.showMessageDialog(searchFrame, "No books found.", "Search Result", JOptionPane.INFORMATION_MESSAGE);
+                } else {
+                    showSearchResults(results);
+                }
+    
+                searchFrame.dispose();
+            }
+        });
+    
+        searchFrame.setVisible(true);
+    }
+
+    
+    private void showSearchResults(List<Book> results) {
+        JFrame resultsFrame = new JFrame("Search Results");
+        resultsFrame.setSize(700, 400);
+        resultsFrame.setLocationRelativeTo(this);
+    
+        String[] columns = {"Title", "Author", "Category", "ISBN", "Available"};
+        String[][] data = new String[results.size()][5];
+    
+        for (int i = 0; i < results.size(); i++) {
+            Book book = results.get(i);
+            data[i][0] = book.getTitle();
+            data[i][1] = book.getAuthor();
+            data[i][2] = book.getCategory();
+            data[i][3] = book.getISBN();
+            data[i][4] = book.isAvailable() ? "Yes" : "No";
+        }
+    
+        JTable table = new JTable(data, columns);
+        JScrollPane scrollPane = new JScrollPane(table);
+        resultsFrame.add(scrollPane);
+        resultsFrame.setVisible(true);
+    }
+    
+
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new LibraryManagementSystemGUI());
