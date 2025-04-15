@@ -1,6 +1,9 @@
 package library.gui;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -235,7 +238,7 @@ public class LibraryManagementSystemGUI extends JFrame {
                 if (results.isEmpty()) {
                     JOptionPane.showMessageDialog(searchFrame, "No books found.", "Search Result", JOptionPane.INFORMATION_MESSAGE);
                 } else {
-                    showSearchResults(results);
+                    showSearchResults(results, query);
                 }
     
                 searchFrame.dispose();
@@ -246,7 +249,7 @@ public class LibraryManagementSystemGUI extends JFrame {
     }
 
     
-    private void showSearchResults(List<Book> results) {
+    private void showSearchResults(List<Book> results, String highlightQuery) {
         JFrame resultsFrame = new JFrame("Search Results");
         resultsFrame.setSize(700, 400);
         resultsFrame.setLocationRelativeTo(this);
@@ -263,7 +266,34 @@ public class LibraryManagementSystemGUI extends JFrame {
             data[i][4] = book.isAvailable() ? "Yes" : "No";
         }
     
-        JTable table = new JTable(data, columns);
+        JTable table = new JTable(data, columns) {
+            @Override
+            public TableCellRenderer getCellRenderer(int row, int column) {
+                return new DefaultTableCellRenderer() {
+                    @Override
+                    public Component getTableCellRendererComponent(JTable table, Object value,
+                                                                boolean isSelected, boolean hasFocus,
+                                                                int row, int col) {
+                        Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+
+                        // Get search query (we pass it in as lowercase)
+                        String cellText = value.toString().toLowerCase();
+
+                        if (!highlightQuery.isEmpty() &&
+                            (col == 0 || col == 3) &&  // Highlight only Title (col 0) and ISBN (col 3)
+                            cellText.contains(highlightQuery)) {
+
+                            c.setBackground(Color.YELLOW);
+                        } else {
+                            c.setBackground(Color.WHITE);
+                        }
+
+                        return c;
+                    }
+                };
+            }
+        };
+
         JScrollPane scrollPane = new JScrollPane(table);
         resultsFrame.add(scrollPane);
         resultsFrame.setVisible(true);
