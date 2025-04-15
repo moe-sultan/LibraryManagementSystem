@@ -6,9 +6,6 @@ import library.models.Book;
 import library.models.LegacyBook;
 import library.adapters.LegacyBookAdapter;
 
-
-
-
 public class Main {
     public static void main(String[] args) {
         Book book1 = BookFactory.createBook("physical","9780141036144", "1984", "George Orwell", "Fiction");
