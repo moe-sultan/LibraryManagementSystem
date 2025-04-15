@@ -41,15 +41,13 @@ public class LibraryManagementSystemGUI extends JFrame {
         JButton addButton = new JButton("Add Book");
         JButton viewButton = new JButton("View Books");
         JButton searchButton = new JButton("Search Books");
-        JButton checkoutButton = new JButton("Checkout Book");
-        JButton returnButton = new JButton("Return Book");
+        JButton manageButton = new JButton("Checkout / Return Book");
 
         panel.add(addButton);
         panel.add(viewButton);
         panel.add(searchButton);
-        panel.add(checkoutButton);
-        panel.add(returnButton);
-
+        panel.add(manageButton);
+        
         add(panel);
 
         setVisible(true);
@@ -73,8 +71,10 @@ public class LibraryManagementSystemGUI extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 openSearchBooksWindow();
             }
-        });        
+        });
         
+        manageButton.addActionListener(e -> openCheckoutWindow());
+
     }
 
 
@@ -297,6 +297,73 @@ public class LibraryManagementSystemGUI extends JFrame {
         JScrollPane scrollPane = new JScrollPane(table);
         resultsFrame.add(scrollPane);
         resultsFrame.setVisible(true);
+    }
+    
+
+    private void openCheckoutWindow() {
+        JFrame checkoutFrame = new JFrame("Checkout / Return Book");
+        checkoutFrame.setSize(700, 400);
+        checkoutFrame.setLocationRelativeTo(this);
+    
+        String[] columns = {"Title", "Author", "Category", "ISBN", "Available"};
+        String[][] data = new String[bookList.size()][5];
+    
+        for (int i = 0; i < bookList.size(); i++) {
+            Book book = bookList.get(i);
+            data[i][0] = book.getTitle();
+            data[i][1] = book.getAuthor();
+            data[i][2] = book.getCategory();
+            data[i][3] = book.getISBN();
+            data[i][4] = book.isAvailable() ? "Yes" : "No";
+        }
+    
+        JTable table = new JTable(data, columns);
+        JScrollPane scrollPane = new JScrollPane(table);
+    
+        JButton checkoutBtn = new JButton("Checkout Selected");
+        JButton returnBtn = new JButton("Return Selected");
+    
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.add(checkoutBtn);
+        buttonPanel.add(returnBtn);
+    
+        checkoutFrame.add(scrollPane, BorderLayout.CENTER);
+        checkoutFrame.add(buttonPanel, BorderLayout.SOUTH);
+        checkoutFrame.setVisible(true);
+    
+        // Checkout button logic
+        checkoutBtn.addActionListener(e -> {
+            int row = table.getSelectedRow();
+            if (row == -1) {
+                JOptionPane.showMessageDialog(checkoutFrame, "Please select a book to checkout.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            Book selectedBook = bookList.get(row);
+            if (selectedBook.isAvailable()) {
+                selectedBook.checkout();
+                JOptionPane.showMessageDialog(checkoutFrame, "Book checked out successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
+                checkoutFrame.dispose();
+            } else {
+                JOptionPane.showMessageDialog(checkoutFrame, "This book is already checked out.", "Unavailable", JOptionPane.WARNING_MESSAGE);
+            }
+        });
+    
+        // Return button logic
+        returnBtn.addActionListener(e -> {
+            int row = table.getSelectedRow();
+            if (row == -1) {
+                JOptionPane.showMessageDialog(checkoutFrame, "Please select a book to return.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            Book selectedBook = bookList.get(row);
+            if (!selectedBook.isAvailable()) {
+                selectedBook.returnBook();
+                JOptionPane.showMessageDialog(checkoutFrame, "Book returned successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
+                checkoutFrame.dispose();
+            } else {
+                JOptionPane.showMessageDialog(checkoutFrame, "This book is already available.", "Notice", JOptionPane.INFORMATION_MESSAGE);
+            }
+        });
     }
     
 
