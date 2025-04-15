@@ -43,6 +43,11 @@ public class LibraryManagementSystemGUI extends JFrame {
         JButton searchButton = new JButton("Search Books");
         JButton manageButton = new JButton("Checkout / Return Book");
 
+        addButton.setToolTipText("Add a new book to the library");
+        viewButton.setToolTipText("See all books currently in the library");
+        searchButton.setToolTipText("Search books by title or ISBN");
+        manageButton.setToolTipText("Checkout or return selected books");
+
         panel.add(addButton);
         panel.add(viewButton);
         panel.add(searchButton);
