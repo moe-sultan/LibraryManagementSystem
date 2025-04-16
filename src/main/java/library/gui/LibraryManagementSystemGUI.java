@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import library.models.Book;
 import library.factories.BookFactory;
@@ -478,9 +480,11 @@ public class LibraryManagementSystemGUI extends JFrame {
         long total = bookList.size();
         long available = bookList.stream().filter(Book::isAvailable).count();
         long checkedOut = total - available;
+        Map<String, Long> categoryCounts = bookList.stream().collect(Collectors.groupingBy(Book::getCategory, Collectors.counting()));
+
     
         JFrame statsFrame = new JFrame("Library Statistics");
-        statsFrame.setSize(300, 200);
+        statsFrame.setSize(500, 300);
         statsFrame.setLocationRelativeTo(this);
     
         JPanel panel = new JPanel(new GridLayout(3, 1, 10, 10));
@@ -489,6 +493,17 @@ public class LibraryManagementSystemGUI extends JFrame {
         JLabel totalLabel = new JLabel("Total books: " + total);
         JLabel availableLabel = new JLabel("Available books: " + available);
         JLabel checkedOutLabel = new JLabel("Checked out books: " + checkedOut);
+
+        JPanel categoryPanel = new JPanel(new GridLayout(0, 1, 5, 5));
+        categoryPanel.setBorder(BorderFactory.createTitledBorder("Books by Category"));
+
+        for (Map.Entry<String, Long> entry : categoryCounts.entrySet()) {
+            JLabel catLabel = new JLabel(entry.getKey() + ": " + entry.getValue());
+            catLabel.setFont(new Font("SansSerif", Font.PLAIN, 14));
+            categoryPanel.add(catLabel);
+        }
+
+        JScrollPane scrollPane = new JScrollPane(categoryPanel);
     
         totalLabel.setFont(new Font("SansSerif", Font.PLAIN, 16));
         availableLabel.setFont(new Font("SansSerif", Font.PLAIN, 16));
@@ -497,9 +512,15 @@ public class LibraryManagementSystemGUI extends JFrame {
         panel.add(totalLabel);
         panel.add(availableLabel);
         panel.add(checkedOutLabel);
-    
-        statsFrame.add(panel);
+        
+        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        mainPanel.add(panel, BorderLayout.NORTH);
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
+
+        statsFrame.add(mainPanel);
         statsFrame.setVisible(true);
+
     }
     
 
