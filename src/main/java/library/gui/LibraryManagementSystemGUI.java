@@ -345,6 +345,7 @@ public class LibraryManagementSystemGUI extends JFrame {
         }
     
         JTable table = new JTable(data, columns);
+        table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         JScrollPane scrollPane = new JScrollPane(table);
     
         JButton checkoutBtn = new JButton("Checkout Selected");
@@ -360,38 +361,74 @@ public class LibraryManagementSystemGUI extends JFrame {
     
         // Checkout button logic
         checkoutBtn.addActionListener(e -> {
-            int row = table.getSelectedRow();
-            if (row == -1) {
-                JOptionPane.showMessageDialog(checkoutFrame, "Please select a book to checkout.", "Error", JOptionPane.ERROR_MESSAGE);
+            int[] selectedRows = table.getSelectedRows();
+            if (selectedRows.length == 0) {
+                JOptionPane.showMessageDialog(checkoutFrame, "Please select at least one book to checkout.", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            Book selectedBook = bookList.get(row);
-            if (selectedBook.isAvailable()) {
-                selectedBook.checkout();
-                JOptionPane.showMessageDialog(checkoutFrame, "Book checked out successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
-                refreshViewTable();
-                checkoutFrame.dispose();
-            } else {
-                JOptionPane.showMessageDialog(checkoutFrame, "This book is already checked out.", "Unavailable", JOptionPane.WARNING_MESSAGE);
+        
+            int successCount = 0;
+            List<String> failedBooks = new ArrayList<>();
+        
+            for (int row : selectedRows) {
+                Book book = bookList.get(row);
+                if (book.isAvailable()) {
+                    book.checkout();
+                    successCount++;
+                } else {
+                    failedBooks.add(book.getTitle());
+                }
             }
+        
+            refreshViewTable();
+        
+            StringBuilder message = new StringBuilder();
+            message.append(successCount).append(" book(s) checked out successfully.\n");
+            if (!failedBooks.isEmpty()) {
+                message.append("Skipped (already checked out):\n");
+                for (String title : failedBooks) {
+                    message.append("- ").append(title).append("\n");
+                }
+            }
+        
+            JOptionPane.showMessageDialog(checkoutFrame, message.toString(), "Checkout Summary", JOptionPane.INFORMATION_MESSAGE);
+            checkoutFrame.dispose();
         });
     
         // Return button logic
         returnBtn.addActionListener(e -> {
-            int row = table.getSelectedRow();
-            if (row == -1) {
-                JOptionPane.showMessageDialog(checkoutFrame, "Please select a book to return.", "Error", JOptionPane.ERROR_MESSAGE);
+            int[] selectedRows = table.getSelectedRows();
+            if (selectedRows.length == 0) {
+                JOptionPane.showMessageDialog(checkoutFrame, "Please select at least one book to return.", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            Book selectedBook = bookList.get(row);
-            if (!selectedBook.isAvailable()) {
-                selectedBook.returnBook();
-                JOptionPane.showMessageDialog(checkoutFrame, "Book returned successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
-                refreshViewTable();
-                checkoutFrame.dispose();
-            } else {
-                JOptionPane.showMessageDialog(checkoutFrame, "This book is already available.", "Notice", JOptionPane.INFORMATION_MESSAGE);
+        
+            int successCount = 0;
+            List<String> skippedBooks = new ArrayList<>();
+        
+            for (int row : selectedRows) {
+                Book book = bookList.get(row);
+                if (!book.isAvailable()) {
+                    book.returnBook();
+                    successCount++;
+                } else {
+                    skippedBooks.add(book.getTitle());
+                }
             }
+        
+            refreshViewTable();
+        
+            StringBuilder message = new StringBuilder();
+            message.append(successCount).append(" book(s) returned successfully.\n");
+            if (!skippedBooks.isEmpty()) {
+                message.append("Skipped (already available):\n");
+                for (String title : skippedBooks) {
+                    message.append("- ").append(title).append("\n");
+                }
+            }
+        
+            JOptionPane.showMessageDialog(checkoutFrame, message.toString(), "Return Summary", JOptionPane.INFORMATION_MESSAGE);
+            checkoutFrame.dispose();
         });
     }
     
