@@ -7,7 +7,9 @@ import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,16 +48,20 @@ public class LibraryManagementSystemGUI extends JFrame {
         JButton viewButton = new JButton("View Books");
         JButton searchButton = new JButton("Search Books");
         JButton manageButton = new JButton("Checkout / Return Book");
+        JButton exportButton = new JButton("Export to CSV");
+
 
         addButton.setToolTipText("Add a new book to the library");
         viewButton.setToolTipText("See all books currently in the library");
         searchButton.setToolTipText("Search books by title or ISBN");
         manageButton.setToolTipText("Checkout or return selected books");
+        exportButton.setToolTipText("Export the book list as a CSV file");
 
         panel.add(addButton);
         panel.add(viewButton);
         panel.add(searchButton);
         panel.add(manageButton);
+        panel.add(exportButton);
         
         add(panel);
 
@@ -83,6 +89,8 @@ public class LibraryManagementSystemGUI extends JFrame {
         });
         
         manageButton.addActionListener(e -> openCheckoutWindow());
+
+        exportButton.addActionListener(e -> exportBooksToCSV());
 
     }
 
@@ -432,6 +440,35 @@ public class LibraryManagementSystemGUI extends JFrame {
         });
     }
     
+
+    private void exportBooksToCSV() {
+    JFileChooser fileChooser = new JFileChooser();
+    fileChooser.setDialogTitle("Save Library as CSV");
+    int userSelection = fileChooser.showSaveDialog(this);
+
+    if (userSelection == JFileChooser.APPROVE_OPTION) {
+        File fileToSave = fileChooser.getSelectedFile();
+        if (!fileToSave.getName().toLowerCase().endsWith(".csv")) {
+            fileToSave = new File(fileToSave.getAbsolutePath() + ".csv");
+        }
+
+        try (PrintWriter writer = new PrintWriter(fileToSave)) {
+            writer.println("Title,Author,Category,ISBN,Available");
+            for (Book book : bookList) {
+                writer.printf("\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"%n",
+                        book.getTitle(),
+                        book.getAuthor(),
+                        book.getCategory(),
+                        book.getISBN(),
+                        book.isAvailable() ? "Yes" : "No");
+            }
+            JOptionPane.showMessageDialog(this, "Books exported successfully to:\n" + fileToSave.getAbsolutePath(), "Export Success", JOptionPane.INFORMATION_MESSAGE);
+        } catch (IOException ex) {
+            JOptionPane.showMessageDialog(this, "Error saving file:\n" + ex.getMessage(), "Export Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+}
+
 
 
     public static void main(String[] args) {
