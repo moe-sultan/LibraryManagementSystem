@@ -16,6 +16,10 @@ import library.factories.BookFactory;
 
 public class LibraryManagementSystemGUI extends JFrame {
 
+    private JTable viewTable;
+    private JFrame viewFrame;
+    
+
     private List<Book> bookList = new ArrayList<>();
 
     //Temporary book variables for testing
@@ -151,6 +155,7 @@ public class LibraryManagementSystemGUI extends JFrame {
 
                 JOptionPane.showMessageDialog(addBookFrame, "Book added successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
+                refreshViewTable();
                 addBookFrame.dispose();
             }
         });
@@ -158,7 +163,7 @@ public class LibraryManagementSystemGUI extends JFrame {
 
 
     private void openViewBooksWindow() {
-        JFrame viewFrame = new JFrame("View All Books");
+        viewFrame = new JFrame("View All Books");
         viewFrame.setSize(700, 400);
         viewFrame.setLocationRelativeTo(this);
     
@@ -174,12 +179,29 @@ public class LibraryManagementSystemGUI extends JFrame {
             data[i][4] = book.isAvailable() ? "Yes" : "No";
         }
     
-        JTable table = new JTable(data, columns);
-        JScrollPane scrollPane = new JScrollPane(table);
-    
-        viewFrame.add(scrollPane);
+        viewTable = new JTable(data, columns);    
+        viewFrame.add(new JScrollPane(viewTable));
         viewFrame.setVisible(true);
-    }    
+    }
+    
+    
+    private void refreshViewTable() {
+        if (viewTable == null) return;
+    
+        String[][] data = new String[bookList.size()][5];
+        for (int i = 0; i < bookList.size(); i++) {
+            Book book = bookList.get(i);
+            data[i][0] = book.getTitle();
+            data[i][1] = book.getAuthor();
+            data[i][2] = book.getCategory();
+            data[i][3] = book.getISBN();
+            data[i][4] = book.isAvailable() ? "Yes" : "No";
+        }
+    
+        viewTable.setModel(new javax.swing.table.DefaultTableModel(data, new String[] {
+            "Title", "Author", "Category", "ISBN", "Available"
+        }));
+    }
 
 
     private void openSearchBooksWindow() {
@@ -347,6 +369,7 @@ public class LibraryManagementSystemGUI extends JFrame {
             if (selectedBook.isAvailable()) {
                 selectedBook.checkout();
                 JOptionPane.showMessageDialog(checkoutFrame, "Book checked out successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
+                refreshViewTable();
                 checkoutFrame.dispose();
             } else {
                 JOptionPane.showMessageDialog(checkoutFrame, "This book is already checked out.", "Unavailable", JOptionPane.WARNING_MESSAGE);
@@ -364,6 +387,7 @@ public class LibraryManagementSystemGUI extends JFrame {
             if (!selectedBook.isAvailable()) {
                 selectedBook.returnBook();
                 JOptionPane.showMessageDialog(checkoutFrame, "Book returned successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
+                refreshViewTable();
                 checkoutFrame.dispose();
             } else {
                 JOptionPane.showMessageDialog(checkoutFrame, "This book is already available.", "Notice", JOptionPane.INFORMATION_MESSAGE);
