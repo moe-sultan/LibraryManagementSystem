@@ -42,9 +42,15 @@ public class LibraryManagementSystemGUI extends JFrame {
         setSize(600, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
+        setLayout(new BorderLayout(10, 10));
 
-        JPanel panel = new JPanel();
-        panel.setLayout(new GridLayout(5, 1, 10, 10));
+        JLabel titleLabel = new JLabel("Library Management System", SwingConstants.CENTER);
+        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 22));
+        titleLabel.setBorder(BorderFactory.createEmptyBorder(20, 10, 10, 10));
+        add(titleLabel, BorderLayout.NORTH);
+
+        JPanel buttonPanel = new JPanel(new GridLayout(0, 1, 10, 10));
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(20, 100, 20, 100));
 
         JButton addButton = new JButton("Add Book");
         JButton viewButton = new JButton("View Books");
@@ -60,44 +66,23 @@ public class LibraryManagementSystemGUI extends JFrame {
         exportButton.setToolTipText("Export the book list as a CSV file");
         statsButton.setToolTipText("Show total, available, and checked out book statistics");
 
-        panel.add(addButton);
-        panel.add(viewButton);
-        panel.add(searchButton);
-        panel.add(manageButton);
-        panel.add(exportButton);
-        panel.add(statsButton);
+        buttonPanel.add(addButton);
+        buttonPanel.add(viewButton);
+        buttonPanel.add(searchButton);
+        buttonPanel.add(manageButton);
+        buttonPanel.add(exportButton);
+        buttonPanel.add(statsButton);
         
-        add(panel);
+        add(buttonPanel, BorderLayout.CENTER);
 
-        setVisible(true);
-
-        addButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                openAddBookWindow();
-            }
-        });
-
-        viewButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                openViewBooksWindow();
-            }
-        });
-
-        searchButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                openSearchBooksWindow();
-            }
-        });
-        
+        addButton.addActionListener(e -> openAddBookWindow());
+        viewButton.addActionListener(e -> openViewBooksWindow());
+        searchButton.addActionListener(e -> openSearchBooksWindow());
         manageButton.addActionListener(e -> openCheckoutWindow());
-
         exportButton.addActionListener(e -> exportBooksToCSV());
-
         statsButton.addActionListener(e -> openStatsWindow());
 
+        setVisible(true);
     }
 
 
