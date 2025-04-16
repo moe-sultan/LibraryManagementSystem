@@ -49,19 +49,21 @@ public class LibraryManagementSystemGUI extends JFrame {
         JButton searchButton = new JButton("Search Books");
         JButton manageButton = new JButton("Checkout / Return Book");
         JButton exportButton = new JButton("Export to CSV");
-
+        JButton statsButton = new JButton("View Stats");
 
         addButton.setToolTipText("Add a new book to the library");
         viewButton.setToolTipText("See all books currently in the library");
         searchButton.setToolTipText("Search books by title or ISBN");
         manageButton.setToolTipText("Checkout or return selected books");
         exportButton.setToolTipText("Export the book list as a CSV file");
+        statsButton.setToolTipText("Show total, available, and checked out book statistics");
 
         panel.add(addButton);
         panel.add(viewButton);
         panel.add(searchButton);
         panel.add(manageButton);
         panel.add(exportButton);
+        panel.add(statsButton);
         
         add(panel);
 
@@ -91,6 +93,8 @@ public class LibraryManagementSystemGUI extends JFrame {
         manageButton.addActionListener(e -> openCheckoutWindow());
 
         exportButton.addActionListener(e -> exportBooksToCSV());
+
+        statsButton.addActionListener(e -> openStatsWindow());
 
     }
 
@@ -442,34 +446,62 @@ public class LibraryManagementSystemGUI extends JFrame {
     
 
     private void exportBooksToCSV() {
-    JFileChooser fileChooser = new JFileChooser();
-    fileChooser.setDialogTitle("Save Library as CSV");
-    int userSelection = fileChooser.showSaveDialog(this);
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Save Library as CSV");
+        int userSelection = fileChooser.showSaveDialog(this);
 
-    if (userSelection == JFileChooser.APPROVE_OPTION) {
-        File fileToSave = fileChooser.getSelectedFile();
-        if (!fileToSave.getName().toLowerCase().endsWith(".csv")) {
-            fileToSave = new File(fileToSave.getAbsolutePath() + ".csv");
-        }
-
-        try (PrintWriter writer = new PrintWriter(fileToSave)) {
-            writer.println("Title,Author,Category,ISBN,Available");
-            for (Book book : bookList) {
-                writer.printf("\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"%n",
-                        book.getTitle(),
-                        book.getAuthor(),
-                        book.getCategory(),
-                        book.getISBN(),
-                        book.isAvailable() ? "Yes" : "No");
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            File fileToSave = fileChooser.getSelectedFile();
+            if (!fileToSave.getName().toLowerCase().endsWith(".csv")) {
+                fileToSave = new File(fileToSave.getAbsolutePath() + ".csv");
             }
-            JOptionPane.showMessageDialog(this, "Books exported successfully to:\n" + fileToSave.getAbsolutePath(), "Export Success", JOptionPane.INFORMATION_MESSAGE);
-        } catch (IOException ex) {
-            JOptionPane.showMessageDialog(this, "Error saving file:\n" + ex.getMessage(), "Export Error", JOptionPane.ERROR_MESSAGE);
+
+            try (PrintWriter writer = new PrintWriter(fileToSave)) {
+                writer.println("Title,Author,Category,ISBN,Available");
+                for (Book book : bookList) {
+                    writer.printf("\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"%n",
+                            book.getTitle(),
+                            book.getAuthor(),
+                            book.getCategory(),
+                            book.getISBN(),
+                            book.isAvailable() ? "Yes" : "No");
+                }
+                JOptionPane.showMessageDialog(this, "Books exported successfully to:\n" + fileToSave.getAbsolutePath(), "Export Success", JOptionPane.INFORMATION_MESSAGE);
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this, "Error saving file:\n" + ex.getMessage(), "Export Error", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
-}
 
 
+    private void openStatsWindow() {
+        long total = bookList.size();
+        long available = bookList.stream().filter(Book::isAvailable).count();
+        long checkedOut = total - available;
+    
+        JFrame statsFrame = new JFrame("Library Statistics");
+        statsFrame.setSize(300, 200);
+        statsFrame.setLocationRelativeTo(this);
+    
+        JPanel panel = new JPanel(new GridLayout(3, 1, 10, 10));
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+    
+        JLabel totalLabel = new JLabel("Total books: " + total);
+        JLabel availableLabel = new JLabel("Available books: " + available);
+        JLabel checkedOutLabel = new JLabel("Checked out books: " + checkedOut);
+    
+        totalLabel.setFont(new Font("SansSerif", Font.PLAIN, 16));
+        availableLabel.setFont(new Font("SansSerif", Font.PLAIN, 16));
+        checkedOutLabel.setFont(new Font("SansSerif", Font.PLAIN, 16));
+    
+        panel.add(totalLabel);
+        panel.add(availableLabel);
+        panel.add(checkedOutLabel);
+    
+        statsFrame.add(panel);
+        statsFrame.setVisible(true);
+    }
+    
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new LibraryManagementSystemGUI());
