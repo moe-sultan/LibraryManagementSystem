@@ -39,15 +39,32 @@ public class LibraryManagementSystemGUI extends JFrame {
         bookList.add(book2);
 
         setTitle("Library Management System");
-        setSize(600, 400);
+        setSize(1000, 800);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout(10, 10));
 
-        JLabel titleLabel = new JLabel("Library Management System", SwingConstants.CENTER);
+        JPanel headerPanel = new JPanel();
+        headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.X_AXIS));
+        headerPanel.setBackground(new Color(230, 230, 250)); // match the background
+        headerPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
+
+        ImageIcon icon = new ImageIcon("assets/library_logo.png");
+        Image raw = icon.getImage().getScaledInstance(40, 40, Image.SCALE_SMOOTH);
+        JLabel logoLabel = new JLabel(icon);
+        logoLabel.setIcon(new ImageIcon(raw));
+        logoLabel.setAlignmentY(Component.CENTER_ALIGNMENT);
+
+        JLabel titleLabel = new JLabel("Library Management System");
         titleLabel.setFont(new Font("SansSerif", Font.BOLD, 22));
-        titleLabel.setBorder(BorderFactory.createEmptyBorder(20, 10, 10, 10));
-        add(titleLabel, BorderLayout.NORTH);
+        titleLabel.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 0));
+        titleLabel.setAlignmentY(Component.CENTER_ALIGNMENT);
+
+        headerPanel.add(logoLabel);
+        headerPanel.add(titleLabel);
+
+        add(headerPanel, BorderLayout.NORTH);
+
 
         JPanel buttonPanel = new JPanel(new GridLayout(0, 1, 10, 10));
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(20, 100, 20, 100));
@@ -66,6 +83,13 @@ public class LibraryManagementSystemGUI extends JFrame {
         exportButton.setToolTipText("Export the book list as a CSV file");
         statsButton.setToolTipText("Show total, available, and checked out book statistics");
 
+        addButton.setIcon(new ImageIcon("assets/add.png"));
+        viewButton.setIcon(new ImageIcon("assets/view.png"));
+        searchButton.setIcon(new ImageIcon("assets/search.png"));
+        manageButton.setIcon(new ImageIcon("assets/manage.png"));
+        exportButton.setIcon(new ImageIcon("assets/export.png"));
+        statsButton.setIcon(new ImageIcon("assets/stats.png"));
+
         buttonPanel.add(addButton);
         buttonPanel.add(viewButton);
         buttonPanel.add(searchButton);
@@ -75,12 +99,20 @@ public class LibraryManagementSystemGUI extends JFrame {
         
         add(buttonPanel, BorderLayout.CENTER);
 
+        JLabel footer = new JLabel("Library Management System v1.0", SwingConstants.CENTER);
+        footer.setFont(new Font("SansSerif", Font.PLAIN, 10));
+        footer.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
+        add(footer, BorderLayout.SOUTH);
+
         addButton.addActionListener(e -> openAddBookWindow());
         viewButton.addActionListener(e -> openViewBooksWindow());
         searchButton.addActionListener(e -> openSearchBooksWindow());
         manageButton.addActionListener(e -> openCheckoutWindow());
         exportButton.addActionListener(e -> exportBooksToCSV());
         statsButton.addActionListener(e -> openStatsWindow());
+
+        buttonPanel.setBackground(new Color(245, 245, 245));
+        getContentPane().setBackground(new Color(230, 230, 250));
 
         setVisible(true);
     }
