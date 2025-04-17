@@ -12,7 +12,7 @@ public class LegacyBookAdapter implements Book {
 
     @Override
     public String getISBN() {
-        return "0000000000000";
+        return legacyBook.fetchCode();
     }
 
     @Override

@@ -4,12 +4,14 @@ public class LegacyBook {
     private String name;
     private String writer;
     private String type;
+    private String code;
     private boolean isAvailable;
 
-    public LegacyBook(String name, String writer, String type) {
+    public LegacyBook(String name, String writer, String type, String code) {
         this.name = name;
         this.writer = writer;
         this.type = type;
+        this.code = code;
         this.isAvailable = true; 
     }
 
@@ -24,6 +26,11 @@ public class LegacyBook {
     public String fetchCategory() {
         return type;
     }
+
+    public String fetchCode() {
+        return code;
+    }
+    
 
     public boolean checkAvailability() {
         return isAvailable;

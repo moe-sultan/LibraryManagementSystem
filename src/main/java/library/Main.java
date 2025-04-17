@@ -14,7 +14,7 @@ public class Main {
         //System.out.println(book1.getTitle());
         //System.out.println(book2.getTitle());
 
-        LegacyBook oldBook = new LegacyBook("Ancient Myths", "Homer", "History");
+        LegacyBook oldBook = new LegacyBook("Ancient Myths", "Homer", "History", "1234567890123");
         Book adaptedBook = new LegacyBookAdapter(oldBook);
 
         System.out.println(adaptedBook.getTitle());

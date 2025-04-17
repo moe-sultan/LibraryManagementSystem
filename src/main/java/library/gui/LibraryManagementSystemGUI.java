@@ -7,7 +7,9 @@ import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -16,6 +18,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import library.models.Book;
+import library.models.LegacyBook;
+import library.adapters.LegacyBookAdapter;
 import library.factories.BookFactory;
 
 public class LibraryManagementSystemGUI extends JFrame {
@@ -46,7 +50,7 @@ public class LibraryManagementSystemGUI extends JFrame {
 
         JPanel headerPanel = new JPanel();
         headerPanel.setLayout(new BoxLayout(headerPanel, BoxLayout.X_AXIS));
-        headerPanel.setBackground(new Color(230, 230, 250)); // match the background
+        headerPanel.setBackground(new Color(230, 230, 250));
         headerPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 10, 20));
 
         ImageIcon icon = new ImageIcon("assets/library_logo.png");
@@ -75,6 +79,8 @@ public class LibraryManagementSystemGUI extends JFrame {
         JButton manageButton = new JButton("Checkout / Return Book");
         JButton exportButton = new JButton("Export to CSV");
         JButton statsButton = new JButton("View Stats");
+        JButton importButton = new JButton("Import External CSV");
+
 
         addButton.setToolTipText("Add a new book to the library");
         viewButton.setToolTipText("See all books currently in the library");
@@ -82,6 +88,7 @@ public class LibraryManagementSystemGUI extends JFrame {
         manageButton.setToolTipText("Checkout or return selected books");
         exportButton.setToolTipText("Export the book list as a CSV file");
         statsButton.setToolTipText("Show total, available, and checked out book statistics");
+        importButton.setToolTipText("Import legacy-format books using adapter");
 
         addButton.setIcon(new ImageIcon("assets/add.png"));
         viewButton.setIcon(new ImageIcon("assets/view.png"));
@@ -89,13 +96,16 @@ public class LibraryManagementSystemGUI extends JFrame {
         manageButton.setIcon(new ImageIcon("assets/manage.png"));
         exportButton.setIcon(new ImageIcon("assets/export.png"));
         statsButton.setIcon(new ImageIcon("assets/stats.png"));
+        importButton.setIcon(new ImageIcon("assets/import.png"));
 
         buttonPanel.add(addButton);
         buttonPanel.add(viewButton);
         buttonPanel.add(searchButton);
         buttonPanel.add(manageButton);
-        buttonPanel.add(exportButton);
         buttonPanel.add(statsButton);
+        buttonPanel.add(exportButton);
+        buttonPanel.add(importButton);
+
         
         add(buttonPanel, BorderLayout.CENTER);
 
@@ -110,6 +120,7 @@ public class LibraryManagementSystemGUI extends JFrame {
         manageButton.addActionListener(e -> openCheckoutWindow());
         exportButton.addActionListener(e -> exportBooksToCSV());
         statsButton.addActionListener(e -> openStatsWindow());
+        importButton.addActionListener(e -> importLegacyCSV());
 
         buttonPanel.setBackground(new Color(245, 245, 245));
         getContentPane().setBackground(new Color(230, 230, 250));
@@ -334,13 +345,9 @@ public class LibraryManagementSystemGUI extends JFrame {
                                                                 int row, int col) {
                         Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
 
-                        // Get search query (we pass it in as lowercase)
                         String cellText = value.toString().toLowerCase();
 
-                        if (!highlightQuery.isEmpty() &&
-                            (col == 0 || col == 3) &&  // Highlight only Title (col 0) and ISBN (col 3)
-                            cellText.contains(highlightQuery)) {
-
+                        if (!highlightQuery.isEmpty() && (col == 0 || col == 3) && cellText.contains(highlightQuery)) {
                             c.setBackground(Color.YELLOW);
                         } else {
                             c.setBackground(Color.WHITE);
@@ -423,7 +430,6 @@ public class LibraryManagementSystemGUI extends JFrame {
             }
         
             JOptionPane.showMessageDialog(checkoutFrame, message.toString(), "Checkout Summary", JOptionPane.INFORMATION_MESSAGE);
-            checkoutFrame.dispose();
         });
     
         // Return button logic
@@ -459,7 +465,6 @@ public class LibraryManagementSystemGUI extends JFrame {
             }
         
             JOptionPane.showMessageDialog(checkoutFrame, message.toString(), "Return Summary", JOptionPane.INFORMATION_MESSAGE);
-            checkoutFrame.dispose();
         });
     }
     
@@ -488,6 +493,61 @@ public class LibraryManagementSystemGUI extends JFrame {
                 JOptionPane.showMessageDialog(this, "Books exported successfully to:\n" + fileToSave.getAbsolutePath(), "Export Success", JOptionPane.INFORMATION_MESSAGE);
             } catch (IOException ex) {
                 JOptionPane.showMessageDialog(this, "Error saving file:\n" + ex.getMessage(), "Export Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+
+    private void importLegacyCSV() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Select Legacy CSV File");
+        int result = fileChooser.showOpenDialog(this);
+
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fileChooser.getSelectedFile();
+            int successCount = 0;
+
+            try (BufferedReader reader = new BufferedReader(new FileReader(selectedFile))) {
+                String line;
+                boolean skipHeader = true;
+
+                while ((line = reader.readLine()) != null) {
+                    if (skipHeader) {
+                        skipHeader = false;
+                        continue;
+                    }
+
+                    String[] parts = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)");
+                    
+                    for (int i = 0; i < parts.length; i++) {
+                        parts[i] = parts[i].replaceAll("^\"|\"$", "").trim();
+                    }
+
+                    if (parts.length < 4) continue;
+
+                    String name = parts[0].trim();
+                    String writer = parts[1].trim();
+                    String genre = parts[2].trim();
+                    String code = parts[3].trim();
+
+                    LegacyBook legacy = new LegacyBook(name, writer, genre, code);
+
+                    Book adapted = new LegacyBookAdapter(legacy);
+
+                    bookList.add(adapted);
+                    successCount++;
+                }
+
+                JOptionPane.showMessageDialog(this,
+                    successCount + " book(s) imported successfully.",
+                    "Import Success", JOptionPane.INFORMATION_MESSAGE);
+
+                refreshViewTable();
+
+            } catch (IOException ex) {
+                JOptionPane.showMessageDialog(this,
+                    "Error reading file:\n" + ex.getMessage(),
+                    "Import Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
